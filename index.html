@@ -17,12 +17,13 @@
           <ul v-for="codePostal in ville.codesPostaux">
             <li>{{codePostal}}</li>
           </ul>
+          <li>région: {{ville.region.nom}}</li>
+          <li>département: {{ville.departement.nom}}</li>
         </li>
       </ul>
     </div>
   </body>
-  <style>
-  </style>
+  <style></style>
   <script src="https://unpkg.com/vue@3"></script>
   <script src="https://unpkg.com/axios"></script>
 
@@ -36,13 +37,11 @@
       },
       methods: {
         recupererVilles: async function () {
-        
           return await axios
             .get(
-              `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone?boost=population`,
+              `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone,departement,region&boost=population`,
             )
             .then((response) => {
-              
               this.resultatApi = response.data
             })
         },
