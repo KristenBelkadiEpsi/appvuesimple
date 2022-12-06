@@ -12,6 +12,7 @@
       <ul v-for="ville in resultatApi">
         <li>nom: {{ville.nom}}</li>
         <li>population: {{ville.population}} habitants</li>
+        <li>surface: {{ville.surface}} hectares</li>
         <li>
           Codes Postaux:
           <ul v-for="codePostal in ville.codesPostaux">
@@ -19,6 +20,7 @@
           </ul>
           <li>région: {{ville.region.nom}}</li>
           <li>département: {{ville.departement.nom}}</li>
+          <li><a :href="urlGoogleMap(ville.centre.coordinates[1], ville.centre.coordinates[0])">Localisation ?</a></li>
         </li>
       </ul>
     </div>
@@ -37,14 +39,18 @@
       },
       methods: {
         recupererVilles: async function () {
+          //console.log( `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone,departement,region,centre&boost=population`)
           return await axios
             .get(
-              `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone,departement,region&boost=population`,
+              `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone,departement,region,centre&boost=population`,
             )
             .then((response) => {
               this.resultatApi = response.data
             })
         },
+        urlGoogleMap:function(longitude,latitude){
+          return `https://www.google.com/maps/@${longitude},${latitude},15z?hl=fr`
+        }
       },
     })
     app.mount('#app')
