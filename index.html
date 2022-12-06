@@ -11,13 +11,21 @@
       <input type="search" v-model="nomVille" @change="recupererVilles()" />
       <ul v-for="ville in resultatApi">
         <li>nom: {{ville.nom}}</li>
-        <li>population: {{ville.population}}</li>
+        <li>population: {{ville.population}} habitants</li>
+        <li>
+          Codes Postaux:
+          <ul v-for="codePostal in ville.codesPostaux">
+            <li>{{codePostal}}</li>
+          </ul>
+        </li>
       </ul>
     </div>
   </body>
-  <style></style>
+  <style>
+  </style>
   <script src="https://unpkg.com/vue@3"></script>
   <script src="https://unpkg.com/axios"></script>
+
   <script>
     const app = Vue.createApp({
       data() {
@@ -28,14 +36,13 @@
       },
       methods: {
         recupererVilles: async function () {
-          console.log(
-            `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&boost=population`,
-          )
+        
           return await axios
             .get(
-              `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&boost=population`,
+              `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone?boost=population`,
             )
             .then((response) => {
+              
               this.resultatApi = response.data
             })
         },
