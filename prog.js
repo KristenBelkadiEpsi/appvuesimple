@@ -1,6 +1,0 @@
-class Chaine{
-
-    a(){
-        return
-    }
-}
