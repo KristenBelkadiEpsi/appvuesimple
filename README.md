@@ -5,3 +5,7 @@ petite application qui permet de rechercher des villes française et d'afficher 
 
 ## Apis utilisées
 - https://geo.api.gouv.fr/
+
+## Bibliothèques utilisées
+- vue.js
+- leafletjs (implementation de carte sur une page web)
