@@ -1,0 +1,6 @@
+class Chaine{
+
+    a(){
+        return
+    }
+}

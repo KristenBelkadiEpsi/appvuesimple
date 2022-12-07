@@ -1,60 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+          integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+          crossorigin=""/>
     <title>informations villes</title>
     <style>
+        .cartes {
+            height: 500px;
+            width: 500px;
+        }
     </style>
-  </head>
-  <body>
-    <div id="app">
-      <input type="search" v-model="nomVille" @change="recupererVilles()" />
-      <ul v-for="ville in resultatApi">
+</head>
+<body>
+<div id="app">
+    <input type="search" v-model="nomVille" @change="recupererVilles()"/>
+    <ul v-for="ville in resultatApi">
         <li>nom: {{ville.nom}}</li>
         <li>population: {{ville.population}} habitants</li>
         <li>surface: {{ville.surface}} hectares</li>
         <li>
-          Codes Postaux:
-          <ul v-for="codePostal in ville.codesPostaux">
-            <li>{{codePostal}}</li>
-          </ul>
-          <li>région: {{ville.region.nom}}</li>
-          <li>département: {{ville.departement.nom}}</li>
-          <li><a :href="urlGoogleMap(ville.centre.coordinates[1], ville.centre.coordinates[0])">Localisation ?</a></li>
+            Codes Postaux:
+            <ul v-for="codePostal in ville.codesPostaux">
+                <li>{{codePostal}}</li>
+            </ul>
+        <li>région: {{ville.region.nom}}</li>
+        <li>département: {{ville.departement.nom}}</li>
+        <li><a target="_blank" :href="urlGoogleMap(ville.centre.coordinates[1], ville.centre.coordinates[0])">vers
+            Google Map</a>
+            <div :id="ville.nom" class="cartes"></div>
         </li>
-      </ul>
-    </div>
-  </body>
-  
-  <script src="https://unpkg.com/vue@3"></script>
-  <script src="https://unpkg.com/axios"></script>
+        </li>
+    </ul>
+</div>
+</body>
 
-  <script>
+<script src="https://unpkg.com/vue@3"></script>
+<script src="https://unpkg.com/axios"></script>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+        integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+        crossorigin=""></script>
+<script>
+
     const app = Vue.createApp({
-      data() {
-        return {
-          nomVille: '',
-          resultatApi: [],
-        }
-      },
-      methods: {
-        recupererVilles: async function () {
-          //console.log( `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone,departement,region,centre&boost=population`)
-          return await axios
-            .get(
-              `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone,departement,region,centre&boost=population`,
-            )
-            .then((response) => {
-              this.resultatApi = response.data
-            })
+        data() {
+            return {
+                nomVille: '',
+                resultatApi: [],
+                listeMap: []
+            }
         },
-        urlGoogleMap:function(longitude,latitude){
-          return `https://www.google.com/maps/@${longitude},${latitude},15z?hl=fr`
-        }
-      },
+        methods: {
+            recupererVilles: async function () {
+                //console.log( `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone,departement,region,centre,contour&boost=population`)
+                await axios
+                    .get(
+                        `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone,departement,region,centre,contour&boost=population`,
+                    )
+                    .then((response) => {
+                        this.listeMap.forEach((m) => m.remove())
+                        this.listeMap = []
+                        this.resultatApi = response.data;
+                    }).then(() => {
+                        this.resultatApi.forEach(element => {
+
+                            this.listeMap.push(L.map(element.nom).setView([element.centre.coordinates[1], element.centre.coordinates[0]], 11))
+                            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                maxZoom: 19,
+                                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                            }).addTo(this.listeMap[this.listeMap.length - 1]);
+                            let pointsInverseContour = element.contour.coordinates;
+                            for (let i = 0; i < pointsInverseContour.length; i++) {
+                                for (let j = 0; j < pointsInverseContour[i].length; j++) {
+                                    pointsInverseContour[i][j].reverse()
+                                }
+                            }
+
+                            let contourVille = L.polygon(pointsInverseContour).addTo(this.listeMap[this.listeMap.length - 1]);
+                        });
+
+                    })
+
+
+            },
+            urlGoogleMap: function (longitude, latitude) {
+                return `https://www.google.com/maps/@${longitude},${latitude},15z?hl=fr`
+            }
+        },
     })
     app.mount('#app')
-  </script>
+</script>
 </html>
