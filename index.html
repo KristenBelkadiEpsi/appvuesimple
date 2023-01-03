@@ -1,109 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-          integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
-          crossorigin=""/>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+      integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+      crossorigin=""
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
+      crossorigin="anonymous"
+    />
 
     <title>informations villes</title>
     <style>
-        [v-cloak] {
-            display: none;
-        }
-        .cartes {
-            height: 500px;
-            width: 500px;
-        }
-
-        #listeVille {
-            padding-bottom: 100px;
-            padding-top: 100px;
-        }
+      [v-cloak] {
+        display: none;
+      }
+      .cartes {
+        height: 500px;
+        width: 500px;
+      }
+      thead tr {
+        text-align: left;
+        background-color: #232180;
+        color: #ffffff;
+      }
+      th,
+      td {
+        border: 1px solid #000000;
+        padding: 12px 15px;
+      }
+      td{
+        background-color: #dddddd;
+      }
+      tbody tr {
+        border-bottom: 1px solid #ff0000;
+      }
+      #tableauVille {
+        border-collapse: collapse;
+        margin: 25px 0;
+        font-size: 0.9em;
+        font-family: sans-serif;
+        min-width: 400px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+      }
     </style>
-</head>
-<body>
-<div id="app">
-    <input type="search" v-model="nomVille" @change="recupererVilles()"/>
+  </head>
+  <body>
+    <div id="app">
+      <div id="zoneRecherche">
+        <input type="search" v-model="nomVille" @change="recupererVilles()" />
+        <input type="button" value="rechercher" @click="recupererVilles()">
+      </div>
+      <table id="tableauVille">
+        <thead>
+          <tr>
+            <th>nom de la ville</th>
+            <th>population</th>
+            <th>surface</th>
+            <th>Codes postaux</th>
+            <th>région</th>
+            <th>département</th>
+            <th>emplacement sur la carte</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-cloak v-for="ville in resultatApi">
+            <td>{{ville.nom}}</td>
+            <td>{{ville.population}}</td>
+            <td>{{ville.surface}}</td>
+            <td>{{ville.codesPostaux.join(", ")}}</td>
+            <td>{{ville.region.nom}}</td>
+            <td>{{ville.departement.nom}}</td>
+            <td>
+              <a
+                target="_blank"
+                :href="urlGoogleMap(ville.centre.coordinates[1], ville.centre.coordinates[0])"
+              >
+                vers Google Map
+              </a>
+              <div :id="ville.nom" class="cartes"></div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
 
-    <ul v-cloak id="listeVille" v-for="ville in resultatApi" class="list-group">
-        <li class="list-group-item">nom: {{ville.nom}}</li>
-        <li class="list-group-item">population: {{ville.population}} habitants</li>
-        <li class="list-group-item">surface: {{ville.surface}} hectares</li>
-        <li>
-            Codes Postaux:
-            <ul v-for="codePostal in ville.codesPostaux" class="list-group list-group-flush">
-                <li class="list-group-item">{{codePostal}}</li>
-            </ul>
-        <li class="list-group-item">région: {{ville.region.nom}}</li>
-        <li class="list-group-item">département: {{ville.departement.nom}}</li>
-        <li class="list-group-item"><a target="_blank"
-                                       :href="urlGoogleMap(ville.centre.coordinates[1], ville.centre.coordinates[0])">vers
-            Google Map</a>
-            <div :id="ville.nom" class="cartes"></div>
-        </li>
-        </li>
-    </ul>
-</div>
-</body>
-
-<script src="https://unpkg.com/vue@3"></script>
-<script src="https://unpkg.com/axios"></script>
-<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
-        integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
-        crossorigin=""></script>
-<script>
-
+  <script src="https://unpkg.com/vue@3"></script>
+  <script src="https://unpkg.com/axios"></script>
+  <script
+    src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+    integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+    crossorigin=""
+  ></script>
+  <script>
     const app = Vue.createApp({
-        data() {
-            return {
-                nomVille: '',
-                resultatApi: [],
-                listeMap: []
-            }
+      data() {
+        return {
+          nomVille: '',
+          resultatApi: [],
+          listeMap: [],
+        }
+      },
+      methods: {
+        recupererVilles: async function () {
+          //console.log( `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone,departement,region,centre,contour&boost=population`)
+          await axios
+            .get(
+              `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone,departement,region,centre,contour&boost=population`,
+            )
+            .then((response) => {
+              this.listeMap.forEach((m) => m.remove())
+              this.listeMap = []
+              this.resultatApi = response.data
+            })
+            .then(() => {
+              this.resultatApi.forEach((element) => {
+                this.listeMap.push(
+                  L.map(element.nom).setView(
+                    [
+                      element.centre.coordinates[1],
+                      element.centre.coordinates[0],
+                    ],
+                    11,
+                  ),
+                )
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                  maxZoom: 19,
+                  attribution:
+                    '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                }).addTo(this.listeMap[this.listeMap.length - 1])
+                let pointsInverseContour = element.contour.coordinates
+                for (let i = 0; i < pointsInverseContour.length; i++) {
+                  for (let j = 0; j < pointsInverseContour[i].length; j++) {
+                    pointsInverseContour[i][j].reverse()
+                  }
+                }
+
+                let contourVille = L.polygon(pointsInverseContour).addTo(
+                  this.listeMap[this.listeMap.length - 1],
+                )
+              })
+            })
         },
-        methods: {
-            recupererVilles: async function () {
-                //console.log( `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone,departement,region,centre,contour&boost=population`)
-                await axios
-                    .get(
-                        `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone,departement,region,centre,contour&boost=population`,
-                    )
-                    .then((response) => {
-                        this.listeMap.forEach((m) => m.remove())
-                        this.listeMap = []
-                        this.resultatApi = response.data;
-                    }).then(() => {
-                        this.resultatApi.forEach(element => {
-
-                            this.listeMap.push(L.map(element.nom).setView([element.centre.coordinates[1], element.centre.coordinates[0]], 11))
-                            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                maxZoom: 19,
-                                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                            }).addTo(this.listeMap[this.listeMap.length - 1]);
-                            let pointsInverseContour = element.contour.coordinates;
-                            for (let i = 0; i < pointsInverseContour.length; i++) {
-                                for (let j = 0; j < pointsInverseContour[i].length; j++) {
-                                    pointsInverseContour[i][j].reverse()
-                                }
-                            }
-
-                            let contourVille = L.polygon(pointsInverseContour).addTo(this.listeMap[this.listeMap.length - 1]);
-                        });
-
-                    })
-
-
-            },
-            urlGoogleMap: function (longitude, latitude) {
-                return `https://www.google.com/maps/@${longitude},${latitude},15z?hl=fr`
-            }
+        urlGoogleMap: function (longitude, latitude) {
+          return `https://www.google.com/maps/@${longitude},${latitude},15z?hl=fr`
         },
+      },
     })
     app.mount('#app')
-</script>
+  </script>
 </html>
