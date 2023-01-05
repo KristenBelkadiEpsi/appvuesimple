@@ -15,7 +15,7 @@
       rel="stylesheet"
       integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
       crossorigin="anonymous"
-    />
+    />10px
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
 
     <title>informations villes</title>
@@ -73,8 +73,9 @@
           v-model="nomVille"
           @change="recupererVilles()"
         />
-
-        <input
+        nombre de résultats maximale:  
+        <input id="nombreResultat" type="number" min="0" max="50" v-model="nbMaxVilles"></input>
+        <input 
           id="rechercheBouton"
           type="button"
           value="rechercher"
@@ -124,13 +125,14 @@
     crossorigin=""
   ></script>
   <script>
-    const nbMaxVilles = 10
+   
     const app = Vue.createApp({
       data() {
         return {
           nomVille: '',
           resultatApi: [],
           listeMap: [],
+          nbMaxVilles: 10,
         }
       },
       methods: {
@@ -144,9 +146,9 @@
               this.resultatApi = []
               this.listeMap.forEach((m) => m.remove())
               this.listeMap = []
-
+              
               response.data.forEach((element) => {
-                if (this.resultatApi.length < nbMaxVilles) {
+                if (this.resultatApi.length < this.nbMaxVilles ) {
                   this.resultatApi.push(element)
                 } else {
                   return
