@@ -22,6 +22,16 @@
       [v-cloak] {
         display: none;
       }
+      #app {
+        margin-top: 10px;
+        margin-left: 10px;
+      }
+      #rechercheTexte {
+        width: 250px;
+      }
+      #rechercheBouton {
+        margin-left: 20px;
+      }
       .cartes {
         height: 500px;
         width: 500px;
@@ -36,7 +46,7 @@
         border: 1px solid #000000;
         padding: 12px 15px;
       }
-      td{
+      td {
         background-color: #dddddd;
       }
       tbody tr {
@@ -54,9 +64,21 @@
   </head>
   <body>
     <div id="app">
-      <div id="zoneRecherche">
-        <input type="search" v-model="nomVille" @change="recupererVilles()" />
-        <input type="button" value="rechercher" @click="recupererVilles()">
+      <div id="divRecherche">
+        <input
+          id="rechercheTexte"
+          type="search"
+          placeholder="entrer le nom d'une ville française"
+          v-model="nomVille"
+          @change="recupererVilles()"
+        />
+
+        <input
+          id="rechercheBouton"
+          type="button"
+          value="rechercher"
+          @click="recupererVilles()"
+        />
       </div>
       <table id="tableauVille">
         <thead>
