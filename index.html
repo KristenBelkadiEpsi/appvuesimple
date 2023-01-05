@@ -85,7 +85,7 @@
           <tr>
             <th>nom de la ville</th>
             <th>population</th>
-            <th>surface</th>
+            <th>surface (en hectares)</th>
             <th>Codes postaux</th>
             <th>région</th>
             <th>département</th>
@@ -123,6 +123,7 @@
     crossorigin=""
   ></script>
   <script>
+    const nbMaxVilles = 10
     const app = Vue.createApp({
       data() {
         return {
@@ -141,7 +142,13 @@
             .then((response) => {
               this.listeMap.forEach((m) => m.remove())
               this.listeMap = []
-              this.resultatApi = response.data
+              response.data.forEach((element) => {
+                if (this.resultatApi.length < nbMaxVilles) {
+                  this.resultatApi.push(element)
+                } else {
+                  return
+                }
+              })
             })
             .then(() => {
               this.resultatApi.forEach((element) => {
