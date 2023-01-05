@@ -141,8 +141,10 @@
               `https://geo.api.gouv.fr/communes?nom=${this.nomVille}&fields=code,nom,surface,population,codesPostaux,zone,departement,region,centre,contour&boost=population`,
             )
             .then((response) => {
+              this.resultatApi = []
               this.listeMap.forEach((m) => m.remove())
               this.listeMap = []
+
               response.data.forEach((element) => {
                 if (this.resultatApi.length < nbMaxVilles) {
                   this.resultatApi.push(element)
